@@ -1,12 +1,14 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { ResponseEnvelopeInterceptor } from './common/interceptors/response-envelope.interceptor';
 import { RolesGuard } from './modules/auth/infrastructure/guards/roles.guard';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
@@ -28,6 +30,9 @@ async function bootstrap() {
   // Global roles guard — evaluates @Roles() decorator after JwtAuthGuard attaches user
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new RolesGuard(reflector));
+
+  const uploadsDir = process.env.UPLOADS_DEST ?? join(process.cwd(), 'uploads');
+  app.useStaticAssets(uploadsDir, { prefix: '/uploads' });
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:8080',
