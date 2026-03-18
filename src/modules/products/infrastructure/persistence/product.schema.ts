@@ -14,7 +14,7 @@ export class ProductSchemaClass {
   @Prop({ required: true, type: Number })
   price: number;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   imageUrl: string | null;
 }
 
