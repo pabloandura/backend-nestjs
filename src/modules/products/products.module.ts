@@ -28,7 +28,7 @@ import { ListProductsUseCase } from './application/use-cases/list-products.use-c
       provide: STORAGE_PORT,
       useFactory: (config: ConfigService) => {
         const driver = config.get<string>('storage.driver');
-        return driver === 's3' ? new S3StorageAdapter() : new LocalStorageAdapter(config);
+        return driver === 's3' ? new S3StorageAdapter(config) : new LocalStorageAdapter(config);
       },
       inject: [ConfigService],
     },
