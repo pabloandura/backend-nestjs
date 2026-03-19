@@ -32,7 +32,7 @@ export class CreateOrderUseCase {
             `Product with id "${item.productId}" not found`,
           );
         }
-        const lineTotal = product.price * item.quantity;
+        const lineTotal = Math.round(product.price * item.quantity * 100) / 100;
         return {
           productId: product.id,
           name: product.name,
@@ -44,7 +44,7 @@ export class CreateOrderUseCase {
       }),
     );
 
-    const total = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+    const total = Math.round(lineItems.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
 
     const order = await this.orderRepository.create({
       clientName: dto.clientName,

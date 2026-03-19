@@ -31,7 +31,7 @@ export class ResponseEnvelopeInterceptor<T>
         // If the handler already returned an envelope (e.g. paginated responses),
         // pass the meta through and wrap accordingly.
         const payload = data as Record<string, unknown> | null;
-        if (payload && typeof payload === 'object' && 'items' in payload) {
+        if (payload && typeof payload === 'object' && 'items' in payload && 'page' in payload) {
           const { items, ...meta } = payload;
           return { success: true, data: items as T, meta, correlationId };
         }
