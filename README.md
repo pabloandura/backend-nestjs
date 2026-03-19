@@ -1,35 +1,54 @@
-# Backend — NestJS API
+# Backend NestJS
 
-NestJS API built for an engineering challenge. Full details and architectural decisions live in the [superproject README](https://github.com/pabloandura/an-enterprise-nestjs-example).
+Hola! Gracias por revisar el código.
 
-## Challenge Compliance
+## Qué pedía el challenge
 
-The challenge required: NestJS + MongoDB + JWT, with Product and Order endpoints, file upload, pagination/sorting/filtering, and a Docker bonus.
+NestJS + MongoDB + JWT, endpoints de Products y Orders con paginación, filtros, ordenamiento, file upload para la imagen del producto, y como bonus dockerizar todo.
 
-**All requirements are met. Intentional divergences:**
+## Todo está cubierto — con algunas decisiones de diseño
 
-| Area | Requirement | What was built | Why |
-|---|---|---|---|
-| Persistence | MongoDB only (`@nestjs/mongoose`) | MongoDB for Products & Orders; **PostgreSQL for Auth** | Auth needs relational integrity: `UNIQUE` on email, FK from `refresh_tokens → users`, transactional token rotation. `@nestjs/mongoose` is used exactly as required for the two data-heavy modules. |
-| Auth | JWT strategy | JWT **+ refresh token rotation** | A bare access token with no rotation is insecure for a real API. The JWT guard itself is the auth strategy; refresh tokens extend it without replacing it. |
-| Order "list of products" | Reference to products | **Embedded line-item snapshots** (`priceAtPurchase`, `name`, `sku`) | Price changes after an order is placed should not alter historical totals — standard e-commerce practice. |
-| Product "picture" field | File upload | Stored as `imageUrl`; file written to disk or S3 | The upload is multipart (satisfies the requirement); the field name reflects what is actually persisted. |
-| Roles | Not mentioned | ADMIN vs USER roles guard | Required to protect mutation and reporting endpoints in a realistic API. |
-| Bonus | Dockerize | Docker + **AWS CloudFormation + ECS + frontend** | The bonus is covered; the extra scope demonstrates a production-ready delivery. |
+### MongoDB y PostgreSQL conviviendo
 
-## Running locally
+El challenge pedía MongoDB con `@nestjs/mongoose`. Products y Orders están en MongoDB, tal cual. Pero para Auth decidí usar PostgreSQL.
 
-Recommended: use the superproject's `docker-compose.dev.yml` — it wires up MongoDB, PostgreSQL, and this API together.
+¿Por qué? Porque Auth maneja usuarios y refresh tokens, y ahí necesitás integridad relacional: un `UNIQUE` en el email, una FK de `refresh_tokens → users`, y rotación atómica de tokens. MongoDB puede hacer todo eso, pero PostgreSQL es la herramienta que mejor se adapta a ese modelo. La decisión fue técnica, no un desvío del espíritu del challenge.
+
+### Refresh tokens además del JWT
+
+El challenge pedía JWT como estrategia de autenticación. Eso está: el `JwtAuthGuard` protege todos los endpoints. Lo que agregué encima es rotación de refresh tokens — básicamente, el access token dura 15 minutos y el refresh token 7 días, con rotación en cada uso.
+
+Un JWT sin rotación de tokens en una API real es una puerta abierta. Preferí mostrarlo bien hecho.
+
+### Los line items de una orden son snapshots
+
+El challenge dice "lista de productos". Podría haber guardado solo los IDs, pero guardé un snapshot del producto al momento de la compra: nombre, SKU, precio, subtotal.
+
+¿Por qué? Porque si el precio de un producto cambia mañana, los pedidos históricos no deberían verse afectados. Es el comportamiento correcto en cualquier sistema de e-commerce.
+
+### El campo "picture" se guarda como `imageUrl`
+
+El upload es multipart, tal como lo pide el challenge. Lo que se persiste en MongoDB es la URL del archivo (en disco local o en S3, según el `STORAGE_DRIVER`). El campo se llama `imageUrl` porque eso es lo que es — una referencia, no el binario en sí.
+
+### Roles de usuario
+
+El challenge no los mencionaba, pero los agregué igual. Sin algún tipo de RBAC, cualquier usuario registrado podría borrar productos o ver los reportes de ventas. No parecía razonable dejarlo así.
+
+### El bonus de Docker y algo más
+
+El bonus pedía dockerizar MongoDB y la API. Eso está en `docker-compose.dev.yml` y `docker-compose.prod.yml`. De yapa, hay stacks de CloudFormation para deployar todo en AWS (VPC, ECS, RDS, DocumentDB, S3, ALB) y un frontend en React para que se pueda ver la API funcionando en contexto real.
+
+---
+
+## Cómo levantarlo
+
+Lo más fácil es desde la raíz del superproyecto:
 
 ```bash
-# From the superproject root
+git clone --recurse-submodules https://github.com/pabloandura/an-enterprise-nestjs-example.git
+cd an-enterprise-nestjs-example
+cp .env.example .env   # completar JWT_SECRET mínimamente
 docker compose -f docker-compose.dev.yml up --build
-# API → http://localhost:3000
 ```
 
-Standalone (requires `.env` with connection strings):
-
-```bash
-npm install
-npm run start:dev
-```
+La API queda en `http://localhost:3000`. El detalle completo de variables de entorno, endpoints y arquitectura está en el [README del superproyecto](https://github.com/pabloandura/an-enterprise-nestjs-example).
