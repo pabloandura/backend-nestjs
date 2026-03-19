@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
+import { Roles, UserRole } from '../../../../common/decorators/roles.decorator';
 import { CreateOrderUseCase } from '../../application/use-cases/create-order.use-case';
 import { UpdateOrderUseCase } from '../../application/use-cases/update-order.use-case';
 import { OrderReportsUseCase } from '../../application/use-cases/order-reports.use-case';
@@ -33,6 +34,7 @@ export class OrdersController {
   }
 
   @Put(':id')
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() dto: UpdateOrderDto,
@@ -41,11 +43,13 @@ export class OrdersController {
   }
 
   @Get('reports/total-last-month')
+  @Roles(UserRole.ADMIN)
   totalLastMonth() {
     return this.reports.getTotalLastMonth();
   }
 
   @Get('reports/highest')
+  @Roles(UserRole.ADMIN)
   highestOrder() {
     return this.reports.getHighestOrder();
   }
