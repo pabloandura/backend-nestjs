@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles, UserRole } from '../../../../common/decorators/roles.decorator';
 import { CreateOrderUseCase } from '../../application/use-cases/create-order.use-case';
 import { UpdateOrderUseCase } from '../../application/use-cases/update-order.use-case';
@@ -19,7 +20,7 @@ import { UpdateOrderDto } from '../../application/dtos/update-order.dto';
 import { ParseMongoIdPipe } from '../../../../common/pipes/parse-mongo-id.pipe';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
   constructor(
     private readonly createOrder: CreateOrderUseCase,

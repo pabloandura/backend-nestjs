@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard';
 import { Roles, UserRole } from '../../../../common/decorators/roles.decorator';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case';
 import { GetProductUseCase } from '../../application/use-cases/get-product.use-case';
@@ -55,7 +56,7 @@ const imageUploadInterceptor = FileInterceptor('image', {
 });
 
 @Controller('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController {
   constructor(
     private readonly createProduct: CreateProductUseCase,
