@@ -1,9 +1,23 @@
-import { IsNumber, IsOptional, IsPositive, IsString, Min } from 'class-validator';
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+
+const ALLOWED_SORT_FIELDS = ['name', 'price', 'createdAt'] as const;
+type SortField = (typeof ALLOWED_SORT_FIELDS)[number];
+const SORT_DIRECTIONS = ['asc', 'desc'] as const;
 
 export class ProductQueryDto {
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @IsOptional()
@@ -14,6 +28,7 @@ export class ProductQueryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   search?: string;
 
   @IsOptional()
@@ -26,9 +41,14 @@ export class ProductQueryDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 20;
 
   @IsOptional()
-  @IsString()
+  @IsIn(
+    ALLOWED_SORT_FIELDS.flatMap((f) =>
+      SORT_DIRECTIONS.map((d) => `${f}:${d}`),
+    ),
+  )
   sort?: string; // format: 'field:asc' or 'field:desc'
 }

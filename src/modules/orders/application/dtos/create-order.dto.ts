@@ -6,6 +6,7 @@ import {
   IsMongoId,
   IsPositive,
   IsString,
+  MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -22,6 +23,7 @@ export class OrderItemDto {
 export class CreateOrderDto {
   @IsString()
   @MinLength(1)
+  @MaxLength(255)
   clientName: string;
 
   @IsArray()
