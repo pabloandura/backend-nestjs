@@ -12,13 +12,12 @@ NestJS + MongoDB + JWT, endpoints de Products y Orders con paginación, filtros,
 
 El challenge pedía MongoDB con `@nestjs/mongoose`. Products y Orders están en MongoDB, tal cual. Pero para Auth decidí usar PostgreSQL.
 
-¿Por qué? Porque Auth maneja usuarios y refresh tokens, y ahí necesitás integridad relacional: un `UNIQUE` en el email, una FK de `refresh_tokens → users`, y rotación atómica de tokens. MongoDB puede hacer todo eso, pero PostgreSQL es la herramienta que mejor se adapta a ese modelo. La decisión fue técnica, no un desvío del espíritu del challenge.
+¿Por qué? Porque Auth maneja usuarios y refresh tokens, y ahí necesitás integridad relacional: un `UNIQUE` en el email, una FK de `refresh_tokens → users`, y rotación atómica de tokens. MongoDB puede hacer todo eso, pero PostgreSQL es la herramienta que mejor se adapta a ese modelo. 
 
 ### Refresh tokens además del JWT
 
 El challenge pedía JWT como estrategia de autenticación. Eso está: el `JwtAuthGuard` protege todos los endpoints. Lo que agregué encima es rotación de refresh tokens — básicamente, el access token dura 15 minutos y el refresh token 7 días, con rotación en cada uso.
 
-Un JWT sin rotación de tokens en una API real es una puerta abierta. Preferí mostrarlo bien hecho.
 
 ### Los line items de una orden son snapshots
 
@@ -49,6 +48,12 @@ git clone --recurse-submodules https://github.com/pabloandura/an-enterprise-nest
 cd an-enterprise-nestjs-example
 cp .env.example .env   # completar JWT_SECRET mínimamente
 docker compose -f docker-compose.dev.yml up --build
+```
+
+Si ya clonaste sin el flag, inicializá los submódulos antes:
+
+```bash
+git submodule update --init --recursive
 ```
 
 La API queda en `http://localhost:3000`. El detalle completo de variables de entorno, endpoints y arquitectura está en el [README del superproyecto](https://github.com/pabloandura/an-enterprise-nestjs-example).
