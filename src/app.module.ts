@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import configuration from './config/configuration';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
@@ -35,7 +36,7 @@ import { RefreshTokenOrmEntity } from './modules/auth/infrastructure/persistence
         synchronize: config.get<string>('nodeEnv') !== 'production',
         ssl:
           config.get<string>('nodeEnv') === 'production'
-            ? { rejectUnauthorized: false }
+            ? { rejectUnauthorized: true }
             : false,
       }),
     }),
@@ -47,6 +48,9 @@ import { RefreshTokenOrmEntity } from './modules/auth/infrastructure/persistence
         uri: config.get<string>('mongo.uri'),
       }),
     }),
+
+    // Rate limiting — 100 req / 60s globally; auth endpoints override to 5 req / 60s
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
 
     // Internal domain events
     EventEmitterModule.forRoot(),

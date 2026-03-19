@@ -6,6 +6,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { RegisterUseCase } from '../../application/use-cases/register.use-case';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
 import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.use-case';
@@ -26,18 +27,21 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   registerUser(@Body() dto: RegisterDto) {
     return this.register.execute(dto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   loginUser(@Body() dto: LoginDto) {
     return this.login.execute(dto);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   refresh(@Body() dto: RefreshDto) {
     return this.refreshToken.execute(dto.refreshToken);
   }
