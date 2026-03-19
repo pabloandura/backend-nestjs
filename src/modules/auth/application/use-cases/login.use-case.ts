@@ -1,6 +1,7 @@
 import {
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -24,6 +25,8 @@ export interface TokenPair {
 
 @Injectable()
 export class LoginUseCase {
+  private readonly logger = new Logger(LoginUseCase.name);
+
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -36,11 +39,13 @@ export class LoginUseCase {
   async execute(dto: LoginDto): Promise<TokenPair> {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) {
+      this.logger.warn(`Failed login attempt — unknown email: ${dto.email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
+      this.logger.warn(`Failed login attempt — wrong password for: ${dto.email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
