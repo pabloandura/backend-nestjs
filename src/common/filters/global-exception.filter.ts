@@ -45,7 +45,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       });
     }
 
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     res.status(status).json({
       success: false,
@@ -53,7 +53,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code,
         message,
         ...(details ? { details } : {}),
-        ...(isProduction ? {} : { stack: exception instanceof Error ? exception.stack : undefined }),
+        ...(isDevelopment ? { stack: exception instanceof Error ? exception.stack : undefined } : {}),
       },
       correlationId,
     });

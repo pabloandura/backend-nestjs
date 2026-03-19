@@ -39,7 +39,7 @@ export class RefreshTokenUseCase {
     }
 
     // Rotation: invalidate the old token immediately
-    await this.refreshTokenRepository.deleteByTokenHash(storedToken.tokenHash);
+    await this.refreshTokenRepository.deleteByTokenHash(rawToken);
 
     const user = await this.userRepository.findById(storedToken.userId);
     if (!user) {
